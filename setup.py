@@ -24,6 +24,8 @@ setup(
     install_requires = [
         'yeetlong',
         'websocket-cli',
+        'websocket',
+        'frozendict',
     ],
 
 )
