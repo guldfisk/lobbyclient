@@ -97,6 +97,29 @@ class LobbyClient(ABC):
             )
         )
 
+    def leave_lobby(self, name: str) -> None:
+        self._ws.send(
+            json.dumps(
+                {
+                    'type': 'leave',
+                    'name': name,
+                }
+            )
+        )
+
+    def join_lobby(self, name: str) -> None:
+        self._ws.send(
+            json.dumps(
+                {
+                    'type': 'join',
+                    'name': name,
+                }
+            )
+        )
+
+    def close(self):
+        self._ws.close()
+
     def _on_error(self, error):
         print_f(error)
 
