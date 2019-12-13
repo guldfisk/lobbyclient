@@ -18,11 +18,8 @@ setup(
     version='1.0',
     packages=['lobbyclient'],
     package_data={'': extra_files},
-    dependency_links = [
-        'https://github.com/guldfisk/yeetlong/tarball/master#egg=yeetlong-1.0',
-    ],
     install_requires = [
-        'yeetlong',
+        'yeetlong @ https://github.com/guldfisk/yeetlong/tarball/master#egg=yeetlong-1.0',
         'websocket-cli',
         'websocket',
         'frozendict',

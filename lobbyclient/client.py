@@ -9,104 +9,7 @@ from abc import ABC, abstractmethod
 from frozendict import frozendict
 import websocket
 
-from lobbyclient.utils import print_f
-
-
-class User(object):
-
-    def __init__(self, username: str, ready: bool):
-        self._username = username
-        self._ready = ready
-
-    @property
-    def username(self) -> str:
-        return self._username
-
-    @property
-    def ready(self) -> bool:
-        return self._ready
-
-    def __hash__(self) -> int:
-        return hash(self._username)
-
-    def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._username == other._username
-        )
-
-
-class Lobby(object):
-
-    def __init__(
-        self,
-        name: str,
-        state: str,
-        users: t.MutableMapping[str, User],
-        owner: str,
-        size: int,
-        key: t.Optional[str],
-    ):
-        self._name = name
-        self._state = state
-        self._users = users
-        self._owner = owner
-        self._size = size
-        self._key = key
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def state(self) -> str:
-        return self._state
-
-    @state.setter
-    def state(self, value: bool) -> None:
-        self._state = value
-
-    @property
-    def users(self) -> t.MutableMapping[str, User]:
-        return self._users
-
-    @users.setter
-    def users(self, value: t.MutableSet[User]) -> None:
-        self._users = value
-
-    @property
-    def owner(self) -> str:
-        return self._owner
-
-    @property
-    def size(self) -> int:
-        return self._size
-
-    @property
-    def key(self) -> t.Optional[str]:
-        return self._key
-
-    @key.setter
-    def key(self, value: str) -> None:
-        self._key = value
-
-    @classmethod
-    def deserialize(cls, remote: t.Any) -> Lobby:
-        return cls(
-            name = remote['name'],
-            state = remote['state'],
-            users = {
-                user['username']: User(
-                    username = user['username'],
-                    ready = user['ready'],
-                )
-                for user in
-                remote['users']
-            },
-            owner = remote['owner'],
-            size = remote['size'],
-            key = remote.get('key'),
-        )
+from lobbyclient.model import Lobby
 
 
 class LobbyClient(ABC):
@@ -164,6 +67,17 @@ class LobbyClient(ABC):
             )
         )
 
+    def set_options(self, name: str, options: t.Any) -> None:
+        self._ws.send(
+            json.dumps(
+                {
+                    'type': 'options',
+                    'name': name,
+                    'options': options,
+                }
+            )
+        )
+
     def leave_lobby(self, name: str) -> None:
         self._ws.send(
             json.dumps(
@@ -209,13 +123,13 @@ class LobbyClient(ABC):
         self._ws.close()
 
     def _on_error(self, error):
-        print_f(error)
+        print(error)
 
     def _on_close(self):
-        print_f("### closed ###")
+        print("### closed ###")
 
     def _on_open(self):
-        print_f('opened')
+        print('opened')
         self._ws.send(
             json.dumps(
                 {
@@ -227,7 +141,7 @@ class LobbyClient(ABC):
 
     def _on_message(self, message):
         message = json.loads(message)
-        print_f(message)
+        print(message)
         message_type = message['type']
 
         with self._lobbies_lock:
@@ -253,6 +167,7 @@ class LobbyClient(ABC):
                 old_lobby = self._lobbies[lobby.name]
                 old_lobby.users = lobby.users
                 old_lobby.state = lobby.state
+                old_lobby.options = lobby.options
                 self._lobbies_changed(
                     modified = {lobby.name: old_lobby}
                 )
