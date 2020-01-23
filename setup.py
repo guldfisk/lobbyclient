@@ -20,7 +20,7 @@ setup(
     package_data={'': extra_files},
     install_requires = [
         'yeetlong @ https://github.com/guldfisk/yeetlong/tarball/master#egg=yeetlong-1.0',
-        'websocket-cli',
+        'websocket-client',
         'websocket',
         'frozendict',
     ],
