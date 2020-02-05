@@ -123,13 +123,14 @@ class LobbyClient(ABC):
         self._ws.close()
 
     def _on_error(self, error):
-        print(error)
+        print('error', error)
+        # self._lobbies = {}
 
     def _on_close(self):
-        print("### closed ###")
+        pass
+        # self._lobbies = {}
 
     def _on_open(self):
-        print('opened')
         self._ws.send(
             json.dumps(
                 {
