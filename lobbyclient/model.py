@@ -37,6 +37,7 @@ class Lobby(object):
         users: t.MutableMapping[str, User],
         owner: str,
         size: int,
+        game_type: str,
         key: t.Optional[str],
     ):
         self._name = name
@@ -45,6 +46,7 @@ class Lobby(object):
         self._users = users
         self._owner = owner
         self._size = size
+        self._game_type = game_type
         self._key = key
 
     @property
@@ -84,6 +86,14 @@ class Lobby(object):
         return self._size
 
     @property
+    def game_type(self) -> str:
+        return self._game_type
+
+    @game_type.setter
+    def game_type(self, value: str) -> None:
+        self._game_type = value
+
+    @property
     def key(self) -> t.Optional[str]:
         return self._key
 
@@ -107,5 +117,6 @@ class Lobby(object):
             },
             owner = remote['owner'],
             size = remote['size'],
+            game_type = remote['game_size'],
             key = remote.get('key'),
         )

@@ -67,6 +67,17 @@ class LobbyClient(ABC):
             )
         )
 
+    def set_game_type(self, name: str, game_type: str) -> None:
+        self._ws.send(
+            json.dumps(
+                {
+                    'type': 'game_type',
+                    'name': name,
+                    'game_type': game_type,
+                }
+            )
+        )
+
     def set_options(self, name: str, options: t.Any) -> None:
         self._ws.send(
             json.dumps(
@@ -169,6 +180,7 @@ class LobbyClient(ABC):
                 old_lobby.users = lobby.users
                 old_lobby.state = lobby.state
                 old_lobby.options = lobby.options
+                old_lobby.game_type = lobby.game_type
                 self._lobbies_changed(
                     modified = {lobby.name: old_lobby}
                 )
