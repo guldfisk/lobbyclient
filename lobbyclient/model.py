@@ -117,6 +117,6 @@ class Lobby(object):
             },
             owner = remote['owner'],
             size = remote['size'],
-            game_type = remote['game_size'],
+            game_type = remote['game_type'],
             key = remote.get('key'),
         )
