@@ -135,11 +135,9 @@ class LobbyClient(ABC):
 
     def _on_error(self, error):
         print('error', error)
-        # self._lobbies = {}
 
     def _on_close(self):
         pass
-        # self._lobbies = {}
 
     def _on_open(self):
         self._ws.send(
@@ -199,6 +197,7 @@ class LobbyClient(ABC):
                 lobby = Lobby.deserialize(message['lobby'])
                 old_lobby = self._lobbies[lobby.name]
                 old_lobby.key = message['key']
+                old_lobby.state = lobby.state
                 self._lobbies_changed(
                     modified = {lobby.name: old_lobby}
                 )
