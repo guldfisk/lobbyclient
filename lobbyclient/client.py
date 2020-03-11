@@ -136,6 +136,9 @@ class LobbyClient(ABC):
     def _on_error(self, error):
         print('error', error)
 
+    def _on_client_error(self, message: t.Mapping[str, t.Any]) -> None:
+        pass
+
     def _on_close(self):
         pass
 
@@ -202,3 +205,6 @@ class LobbyClient(ABC):
                     modified = {lobby.name: old_lobby}
                 )
                 self._game_started(old_lobby, message['key'])
+
+            elif message_type == 'error':
+                self._on_client_error(message)
