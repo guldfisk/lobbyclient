@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import logging
 import threading
 import typing as t
 from abc import ABC, abstractmethod
@@ -134,13 +135,13 @@ class LobbyClient(ABC):
         self._ws.close()
 
     def _on_error(self, error):
-        print('error', error)
+        logging.info(f'socket error: {error}')
 
     def _on_client_error(self, message: t.Mapping[str, t.Any]) -> None:
         pass
 
     def _on_close(self):
-        pass
+        logging.info('socket closed')
 
     def _on_open(self):
         self._ws.send(
@@ -154,7 +155,7 @@ class LobbyClient(ABC):
 
     def _on_message(self, message):
         message = json.loads(message)
-        print(message)
+        logging.info(f'message {message}')
         message_type = message['type']
 
         with self._lobbies_lock:
