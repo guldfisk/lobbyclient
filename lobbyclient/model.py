@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import typing as t
+from dataclasses import dataclass
 
 
 class User(object):
@@ -27,86 +28,32 @@ class User(object):
         )
 
 
+@dataclass
+class LobbyOptions(object):
+    size: int
+    minimum_size: int
+    require_ready: bool
+    unready_on_change: bool
+
+
+@dataclass
 class Lobby(object):
-
-    def __init__(
-        self,
-        name: str,
-        state: str,
-        options: t.Any,
-        users: t.MutableMapping[str, User],
-        owner: str,
-        size: int,
-        game_type: str,
-        key: t.Optional[str],
-    ):
-        self._name = name
-        self._state = state
-        self._options = options
-        self._users = users
-        self._owner = owner
-        self._size = size
-        self._game_type = game_type
-        self._key = key
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def state(self) -> str:
-        return self._state
-
-    @property
-    def options(self) -> t.Any:
-        return self._options
-
-    @options.setter
-    def options(self, values) -> None:
-        self._options = values
-
-    @state.setter
-    def state(self, value: bool) -> None:
-        self._state = value
-
-    @property
-    def users(self) -> t.MutableMapping[str, User]:
-        return self._users
-
-    @users.setter
-    def users(self, value: t.MutableSet[User]) -> None:
-        self._users = value
-
-    @property
-    def owner(self) -> str:
-        return self._owner
-
-    @property
-    def size(self) -> int:
-        return self._size
-
-    @property
-    def game_type(self) -> str:
-        return self._game_type
-
-    @game_type.setter
-    def game_type(self, value: str) -> None:
-        self._game_type = value
-
-    @property
-    def key(self) -> t.Optional[str]:
-        return self._key
-
-    @key.setter
-    def key(self, value: str) -> None:
-        self._key = value
+    name: str
+    state: str
+    lobby_options: LobbyOptions
+    game_options: t.Mapping[str, t.Any]
+    users: t.MutableMapping[str, User]
+    owner: str
+    game_type: str
+    key: t.Optional[str]
 
     @classmethod
     def deserialize(cls, remote: t.Any) -> Lobby:
         return cls(
             name = remote['name'],
             state = remote['state'],
-            options = remote['options'],
+            lobby_options = LobbyOptions(**remote['lobby_options']),
+            game_options = remote['game_options'],
             users = {
                 user['username']: User(
                     username = user['username'],
@@ -116,7 +63,6 @@ class Lobby(object):
                 remote['users']
             },
             owner = remote['owner'],
-            size = remote['size'],
             game_type = remote['game_type'],
             key = remote.get('key'),
         )

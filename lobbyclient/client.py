@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from frozendict import frozendict
 import websocket
 
-from lobbyclient.model import Lobby
+from lobbyclient.model import Lobby, LobbyOptions
 
 
 class LobbyClient(ABC):
@@ -58,28 +58,37 @@ class LobbyClient(ABC):
         with self._lobbies_lock:
             return self._lobbies.get(name)
 
-    def create_lobby(self, name: str) -> None:
+    def create_lobby(
+        self, name: str,
+        game_type: str,
+        lobby_options: LobbyOptions,
+        game_options: t.Mapping[str, t.Any],
+    ) -> None:
         self._ws.send(
             json.dumps(
                 {
                     'type': 'create',
                     'name': name,
+                    'game_type': game_type,
+                    'lobby_options': lobby_options.__dict__,
+                    'game_options': game_options,
                 }
             )
         )
 
-    def set_game_type(self, name: str, game_type: str) -> None:
+    def set_game_type(self, name: str, game_type: str, options: t.Mapping[str, t.Any]) -> None:
         self._ws.send(
             json.dumps(
                 {
                     'type': 'game_type',
                     'name': name,
                     'game_type': game_type,
+                    'options': options,
                 }
             )
         )
 
-    def set_options(self, name: str, options: t.Any) -> None:
+    def set_options(self, name: str, options: t.Mapping[str, t.Any]) -> None:
         self._ws.send(
             json.dumps(
                 {
@@ -121,7 +130,7 @@ class LobbyClient(ABC):
             )
         )
 
-    def start_game(self, name: str):
+    def start_game(self, name: str) -> None:
         self._ws.send(
             json.dumps(
                 {
@@ -181,7 +190,7 @@ class LobbyClient(ABC):
                 old_lobby = self._lobbies[lobby.name]
                 old_lobby.users = lobby.users
                 old_lobby.state = lobby.state
-                old_lobby.options = lobby.options
+                old_lobby.game_options = lobby.game_options
                 old_lobby.game_type = lobby.game_type
                 self._lobbies_changed(
                     modified = {lobby.name: old_lobby}
