@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import logging
+import ssl
 import threading
 import typing as t
 from abc import ABC, abstractmethod
@@ -19,6 +20,8 @@ class LobbyClient(ABC):
         self,
         url: str,
         token: str,
+        *,
+        verify_ssl: bool = True,
     ):
         self._token = token
 
@@ -30,7 +33,11 @@ class LobbyClient(ABC):
         )
         self._ws.on_open = self._on_open
 
-        self._ws_thread = threading.Thread(target = self._ws.run_forever, daemon = True)
+        self._ws_thread = threading.Thread(
+            target = self._ws.run_forever,
+            daemon = True,
+            kwargs = None if verify_ssl else {'sslopt': {'cert_reqs': ssl.CERT_NONE}},
+        )
 
         self._lobbies_lock = threading.Lock()
         self._lobbies: t.MutableMapping[str, Lobby] = {}
