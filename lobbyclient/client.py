@@ -8,14 +8,13 @@ import threading
 import typing as t
 from abc import ABC, abstractmethod
 
-from frozendict import frozendict
 import websocket
+from frozendict import frozendict
 
 from lobbyclient.model import Lobby, LobbyOptions
 
 
 class LobbyClient(ABC):
-
     def __init__(
         self,
         url: str,
@@ -27,16 +26,16 @@ class LobbyClient(ABC):
 
         self._ws = websocket.WebSocketApp(
             url,
-            on_message = self._on_message,
-            on_error = self._on_error,
-            on_close = self._on_close,
+            on_message=self._on_message,
+            on_error=self._on_error,
+            on_close=self._on_close,
         )
         self._ws.on_open = self._on_open
 
         self._ws_thread = threading.Thread(
-            target = self._ws.run_forever,
-            daemon = True,
-            kwargs = None if verify_ssl else {'sslopt': {'cert_reqs': ssl.CERT_NONE}},
+            target=self._ws.run_forever,
+            daemon=True,
+            kwargs=None if verify_ssl else {"sslopt": {"cert_reqs": ssl.CERT_NONE}},
         )
 
         self._lobbies_lock = threading.Lock()
@@ -66,7 +65,8 @@ class LobbyClient(ABC):
             return self._lobbies.get(name)
 
     def create_lobby(
-        self, name: str,
+        self,
+        name: str,
         game_type: str,
         lobby_options: LobbyOptions,
         game_options: t.Mapping[str, t.Any],
@@ -74,11 +74,11 @@ class LobbyClient(ABC):
         self._ws.send(
             json.dumps(
                 {
-                    'type': 'create',
-                    'name': name,
-                    'game_type': game_type,
-                    'lobby_options': lobby_options.__dict__,
-                    'game_options': game_options,
+                    "type": "create",
+                    "name": name,
+                    "game_type": game_type,
+                    "lobby_options": lobby_options.__dict__,
+                    "game_options": game_options,
                 }
             )
         )
@@ -87,10 +87,10 @@ class LobbyClient(ABC):
         self._ws.send(
             json.dumps(
                 {
-                    'type': 'game_type',
-                    'name': name,
-                    'game_type': game_type,
-                    'options': options,
+                    "type": "game_type",
+                    "name": name,
+                    "game_type": game_type,
+                    "options": options,
                 }
             )
         )
@@ -99,9 +99,9 @@ class LobbyClient(ABC):
         self._ws.send(
             json.dumps(
                 {
-                    'type': 'options',
-                    'name': name,
-                    'options': options,
+                    "type": "options",
+                    "name": name,
+                    "options": options,
                 }
             )
         )
@@ -110,8 +110,8 @@ class LobbyClient(ABC):
         self._ws.send(
             json.dumps(
                 {
-                    'type': 'leave',
-                    'name': name,
+                    "type": "leave",
+                    "name": name,
                 }
             )
         )
@@ -120,8 +120,8 @@ class LobbyClient(ABC):
         self._ws.send(
             json.dumps(
                 {
-                    'type': 'join',
-                    'name': name,
+                    "type": "join",
+                    "name": name,
                 }
             )
         )
@@ -130,9 +130,9 @@ class LobbyClient(ABC):
         self._ws.send(
             json.dumps(
                 {
-                    'type': 'ready',
-                    'name': name,
-                    'state': ready,
+                    "type": "ready",
+                    "name": name,
+                    "state": ready,
                 }
             )
         )
@@ -141,8 +141,8 @@ class LobbyClient(ABC):
         self._ws.send(
             json.dumps(
                 {
-                    'type': 'start',
-                    'name': name,
+                    "type": "start",
+                    "name": name,
                 }
             )
         )
@@ -151,77 +151,65 @@ class LobbyClient(ABC):
         self._ws.close()
 
     def _on_error(self, error):
-        logging.info(f'socket error: {error}')
+        logging.info(f"socket error: {error}")
 
     def _on_client_error(self, message: t.Mapping[str, t.Any]) -> None:
         pass
 
     def _on_close(self):
-        logging.info('socket closed')
+        logging.info("socket closed")
 
     def _on_open(self):
         self._ws.send(
             json.dumps(
                 {
-                    'type': 'authentication',
-                    'token': self._token,
+                    "type": "authentication",
+                    "token": self._token,
                 }
             )
         )
 
     def _on_message(self, message):
         message = json.loads(message)
-        logging.info(f'message {message}')
-        message_type = message['type']
+        logging.info(f"message {message}")
+        message_type = message["type"]
 
         with self._lobbies_lock:
-            if message_type == 'all_lobbies':
-                self._lobbies = {
-                    lobby['name']: Lobby.deserialize(lobby)
-                    for lobby in
-                    message['lobbies']
-                }
-                self._lobbies_changed(
-                    created = self._lobbies
-                )
+            if message_type == "all_lobbies":
+                self._lobbies = {lobby["name"]: Lobby.deserialize(lobby) for lobby in message["lobbies"]}
+                self._lobbies_changed(created=self._lobbies)
 
-            elif message_type == 'lobby_created':
-                lobby = Lobby.deserialize(message['lobby'])
+            elif message_type == "lobby_created":
+                lobby = Lobby.deserialize(message["lobby"])
                 self._lobbies[lobby.name] = lobby
-                self._lobbies_changed(
-                    created = {lobby.name: lobby}
-                )
+                self._lobbies_changed(created={lobby.name: lobby})
 
-            elif message_type == 'lobby_update':
-                lobby = Lobby.deserialize(message['lobby'])
+            elif message_type == "lobby_update":
+                lobby = Lobby.deserialize(message["lobby"])
                 old_lobby = self._lobbies[lobby.name]
                 old_lobby.users = lobby.users
                 old_lobby.state = lobby.state
                 old_lobby.game_options = lobby.game_options
                 old_lobby.game_type = lobby.game_type
-                self._lobbies_changed(
-                    modified = {lobby.name: old_lobby}
-                )
+                self._lobbies_changed(modified={lobby.name: old_lobby})
 
-            elif message_type == 'lobby_closed':
+            elif message_type == "lobby_closed":
                 try:
-                    del self._lobbies[message['name']]
+                    del self._lobbies[message["name"]]
                 except KeyError:
                     pass
                 else:
                     self._lobbies_changed(
-                        closed = {message['name']},
+                        closed={message["name"]},
                     )
 
-            elif message_type == 'game_started':
-                lobby = Lobby.deserialize(message['lobby'])
+            elif message_type == "game_started":
+                lobby = Lobby.deserialize(message["lobby"])
                 old_lobby = self._lobbies[lobby.name]
-                old_lobby.key = message['key']
+                old_lobby.key = message["key"]
                 old_lobby.state = lobby.state
-                self._lobbies_changed(
-                    modified = {lobby.name: old_lobby}
-                )
-                self._game_started(old_lobby, message['key'])
+                self._lobbies_changed(modified={lobby.name: old_lobby})
+                self._game_started(old_lobby, message["key"])
 
-            elif message_type == 'error':
+            elif message_type == "error":
                 self._on_client_error(message)

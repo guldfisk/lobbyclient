@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 
 class User(object):
-
     def __init__(self, username: str, ready: bool):
         self._username = username
         self._ready = ready
@@ -22,10 +21,7 @@ class User(object):
         return hash(self._username)
 
     def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._username == other._username
-        )
+        return isinstance(other, self.__class__) and self._username == other._username
 
 
 @dataclass
@@ -50,19 +46,18 @@ class Lobby(object):
     @classmethod
     def deserialize(cls, remote: t.Any) -> Lobby:
         return cls(
-            name = remote['name'],
-            state = remote['state'],
-            lobby_options = LobbyOptions(**remote['lobby_options']),
-            game_options = remote['game_options'],
-            users = {
-                user['username']: User(
-                    username = user['username'],
-                    ready = user['ready'],
+            name=remote["name"],
+            state=remote["state"],
+            lobby_options=LobbyOptions(**remote["lobby_options"]),
+            game_options=remote["game_options"],
+            users={
+                user["username"]: User(
+                    username=user["username"],
+                    ready=user["ready"],
                 )
-                for user in
-                remote['users']
+                for user in remote["users"]
             },
-            owner = remote['owner'],
-            game_type = remote['game_type'],
-            key = remote.get('key'),
+            owner=remote["owner"],
+            game_type=remote["game_type"],
+            key=remote.get("key"),
         )

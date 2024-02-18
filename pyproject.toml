@@ -1,0 +1,30 @@
+[project]
+name = "lobbyclient"
+
+[tool.isort]
+profile = "black"
+lines_after_imports = 2
+honor_noqa = true
+
+[tool.black]
+line-length = 119
+
+[tool.poetry]
+name = "lobbyclient"
+version = "0.1.0"
+description = ""
+authors = ["None"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "~3.9"
+websocket = "~0.2"
+websocket-client = "~1.2"
+frozendict = "~1.2"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
