@@ -150,16 +150,16 @@ class LobbyClient(ABC):
     def close(self):
         self._ws.close()
 
-    def _on_error(self, error):
+    def _on_error(self, app, error, *args, **kwargs):
         logging.info(f"socket error: {error}")
 
     def _on_client_error(self, message: t.Mapping[str, t.Any]) -> None:
         pass
 
-    def _on_close(self):
+    def _on_close(self, app, *args, **kwargs):
         logging.info("socket closed")
 
-    def _on_open(self):
+    def _on_open(self, app, *args, **kwargs):
         self._ws.send(
             json.dumps(
                 {
@@ -169,7 +169,7 @@ class LobbyClient(ABC):
             )
         )
 
-    def _on_message(self, message):
+    def _on_message(self, app, message, *args, **kwargs):
         message = json.loads(message)
         logging.info(f"message {message}")
         message_type = message["type"]
